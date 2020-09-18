@@ -4,5 +4,5 @@ Language: Cpp
 BasedOnStyle: Google
 IndentPPDirectives: AfterHash
 IndentCaseLabels: false
-AlwaysBreakTemplateDeclarations: false
+AlwaysBreakTemplateDeclarations: No
 DerivePointerAlignment: false
