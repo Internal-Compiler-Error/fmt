@@ -246,27 +246,12 @@
 
 FMT_BEGIN_NAMESPACE
 
-// Implementations of enable_if_t and other metafunctions for older systems.
-template <bool B, class T = void>
-using enable_if_t = typename std::enable_if<B, T>::type;
-template <bool B, class T, class F>
-using conditional_t = typename std::conditional<B, T, F>::type;
-template <bool B> using bool_constant = std::integral_constant<bool, B>;
-template <typename T>
-using remove_reference_t = typename std::remove_reference<T>::type;
-template <typename T>
-using remove_const_t = typename std::remove_const<T>::type;
-template <typename T>
-using remove_cvref_t = typename std::remove_cv<remove_reference_t<T>>::type;
-template <typename T> struct type_identity { using type = T; };
-template <typename T> using type_identity_t = typename type_identity<T>::type;
-
 struct monostate {};
 
 // An enable_if helper to be used in template parameters which results in much
 // shorter symbols: https://godbolt.org/z/sWw4vP. Extra parentheses are needed
 // to workaround a bug in MSVC 2019 (see #1140 and #1186).
-#define FMT_ENABLE_IF(...) enable_if_t<(__VA_ARGS__), int> = 0
+#define FMT_ENABLE_IF(...) std::enable_if_t<(__VA_ARGS__), int> = 0
 
 namespace detail {
 
@@ -502,7 +487,7 @@ struct is_string : std::is_class<decltype(to_string_view(std::declval<S>()))> {
 };
 
 template <typename S, typename = void> struct char_t_impl {};
-template <typename S> struct char_t_impl<S, enable_if_t<is_string<S>::value>> {
+template <typename S> struct char_t_impl<S, std::enable_if_t<is_string<S>::value>> {
   using result = decltype(to_string_view(std::declval<S>()));
   using type = typename result::value_type;
 };
@@ -800,7 +785,7 @@ template <typename T> class iterator_buffer<T*, T> : public buffer<T> {
 // A buffer that writes to a container with the contiguous storage.
 template <typename Container>
 class iterator_buffer<std::back_insert_iterator<Container>,
-                      enable_if_t<is_contiguous<Container>::value,
+                      std::enable_if_t<is_contiguous<Container>::value,
                                   typename Container::value_type>>
     : public buffer<typename Container::value_type> {
  private:
@@ -1084,7 +1069,7 @@ template <typename Context> class value {
     // have different extension points, e.g. `formatter<T>` for `format` and
     // `printf_formatter<T>` for `printf`.
     custom.format = format_custom_arg<
-        T, conditional_t<has_formatter<T, Context>::value,
+        T, std::conditional_t<has_formatter<T, Context>::value,
                          typename Context::template formatter_type<T>,
                          fallback_formatter<T, char_type>>>;
   }
@@ -1107,8 +1092,8 @@ FMT_CONSTEXPR basic_format_arg<Context> make_arg(const T& value);
 // To minimize the number of types we need to deal with, long is translated
 // either to int or to long long depending on its size.
 enum { long_short = sizeof(long) == sizeof(int) };
-using long_type = conditional_t<long_short, int, long long>;
-using ulong_type = conditional_t<long_short, unsigned, unsigned long long>;
+using long_type = std::conditional_t<long_short, int, long long>;
+using ulong_type = std::conditional_t<long_short, unsigned, unsigned long long>;
 
 struct unformattable {};
 
@@ -1384,7 +1369,7 @@ template <typename It> class is_output_iterator {
   using type = decltype(test<It>(typename iterator_category<It>::type{}));
 
  public:
-  enum { value = !std::is_const<remove_reference_t<type>>::value };
+  enum { value = !std::is_const<std::remove_reference_t<type>>::value };
 };
 
 template <typename OutputIt>
@@ -1576,7 +1561,7 @@ class format_arg_store
   static const size_t num_named_args = detail::count_named_args<Args...>();
   static const bool is_packed = num_args <= detail::max_packed_args;
 
-  using value_type = conditional_t<is_packed, detail::value<Context>,
+  using value_type = std::conditional_t<is_packed, detail::value<Context>,
                                    basic_format_arg<Context>>;
 
   detail::arg_data<value_type, typename Context::char_type, num_args,
@@ -1629,11 +1614,11 @@ inline format_arg_store<Context, Args...> make_format_args(
  */
 template <typename... Args, typename S, typename Char = char_t<S>>
 inline auto make_args_checked(const S& format_str,
-                              const remove_reference_t<Args>&... args)
-    -> format_arg_store<buffer_context<Char>, remove_reference_t<Args>...> {
+                              const std::remove_reference_t<Args>&... args)
+    -> format_arg_store<buffer_context<Char>, std::remove_reference_t<Args>...> {
   static_assert(
       detail::count<(
-              std::is_base_of<detail::view, remove_reference_t<Args>>::value &&
+              std::is_base_of<detail::view, std::remove_reference_t<Args>>::value &&
               std::is_reference<Args>::value)...>() == 0,
       "passing views as lvalues is disallowed");
   detail::check_format_string<Args...>(format_str);
@@ -1691,7 +1676,7 @@ class dynamic_format_arg_store
   };
 
   template <typename T>
-  using stored_type = conditional_t<detail::is_string<T>::value,
+  using stored_type = std::conditional_t<detail::is_string<T>::value,
                                     std::basic_string<char_type>, T>;
 
   // Storage of basic_format_arg must be contiguous.
@@ -1958,14 +1943,14 @@ namespace detail {
 template <typename Char, FMT_ENABLE_IF(!std::is_same<Char, char>::value)>
 std::basic_string<Char> vformat(
     basic_string_view<Char> format_str,
-    basic_format_args<buffer_context<type_identity_t<Char>>> args);
+    basic_format_args<buffer_context<std::type_identity_t<Char>>> args);
 
 FMT_API std::string vformat(string_view format_str, format_args args);
 
 template <typename Char>
 buffer_appender<Char> vformat_to(
     buffer<Char>& buf, basic_string_view<Char> format_str,
-    basic_format_args<FMT_BUFFER_CONTEXT(type_identity_t<Char>)> args);
+    basic_format_args<FMT_BUFFER_CONTEXT(std::type_identity_t<Char>)> args);
 
 template <typename Char, typename Args,
           FMT_ENABLE_IF(!std::is_same<Char, char>::value)>
@@ -1984,7 +1969,7 @@ template <typename OutputIt, typename S, typename Char = char_t<S>,
           FMT_ENABLE_IF(detail::is_output_iterator<OutputIt>::value)>
 OutputIt vformat_to(
     OutputIt out, const S& format_str,
-    basic_format_args<buffer_context<type_identity_t<Char>>> args) {
+    basic_format_args<buffer_context<std::type_identity_t<Char>>> args) {
   decltype(detail::get_buffer<Char>(out)) buf(detail::get_buffer_init(out));
   detail::vformat_to(buf, to_string_view(format_str), args);
   return detail::get_iterator(buf);
@@ -2020,7 +2005,7 @@ template <typename OutputIt, typename Char, typename... Args,
           FMT_ENABLE_IF(detail::is_output_iterator<OutputIt>::value)>
 inline format_to_n_result<OutputIt> vformat_to_n(
     OutputIt out, size_t n, basic_string_view<Char> format_str,
-    basic_format_args<buffer_context<type_identity_t<Char>>> args) {
+    basic_format_args<buffer_context<std::type_identity_t<Char>>> args) {
   detail::iterator_buffer<OutputIt, Char, detail::fixed_buffer_traits> buf(out,
                                                                            n);
   detail::vformat_to(buf, format_str, args);
@@ -2059,7 +2044,7 @@ inline size_t formatted_size(string_view format_str, Args&&... args) {
 template <typename S, typename Char = char_t<S>>
 FMT_INLINE std::basic_string<Char> vformat(
     const S& format_str,
-    basic_format_args<buffer_context<type_identity_t<Char>>> args) {
+    basic_format_args<buffer_context<std::type_identity_t<Char>>> args) {
   return detail::vformat(to_string_view(format_str), args);
 }
 
