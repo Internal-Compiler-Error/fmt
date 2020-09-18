@@ -71,11 +71,8 @@
 #  define FMT_HAS_INCLUDE(x) 0
 #endif
 
-#ifdef __has_cpp_attribute
-#  define FMT_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
-#else
-#  define FMT_HAS_CPP_ATTRIBUTE(x) 0
-#endif
+
+#define FMT_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
 
 #define FMT_HAS_CPP14_ATTRIBUTE(attribute) \
   (__cplusplus >= 201402L && FMT_HAS_CPP_ATTRIBUTE(attribute))
@@ -226,16 +223,8 @@
 #  define FMT_EXTERN
 #endif
 
-// libc++ supports string_view in pre-c++17.
-#if (FMT_HAS_INCLUDE(<string_view>) &&                       \
-     (__cplusplus > 201402L || defined(_LIBCPP_VERSION))) || \
-    (defined(_MSVC_LANG) && _MSVC_LANG > 201402L && _MSC_VER >= 1910)
-#  include <string_view>
+// use std::string_view
 #  define FMT_USE_STRING_VIEW
-#elif FMT_HAS_INCLUDE("experimental/string_view") && __cplusplus >= 201402L
-#  include <experimental/string_view>
-#  define FMT_USE_EXPERIMENTAL_STRING_VIEW
-#endif
 
 #ifndef FMT_UNICODE
 #  define FMT_UNICODE !FMT_MSC_VER
