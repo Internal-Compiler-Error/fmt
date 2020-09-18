@@ -1,9 +1,4 @@
-cmake_minimum_required(VERSION 3.1...3.18)
-
-# Fallback for using newer policies on CMake <3.12.
-if(${CMAKE_VERSION} VERSION_LESS 3.12)
-  cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-endif()
+cmake_minimum_required(VERSION 3.17)
 
 # Determine if fmt is built as a subproject (using add_subdirectory)
 # or if it is the master project.
@@ -90,7 +85,7 @@ endif ()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
   "${CMAKE_CURRENT_SOURCE_DIR}/support/cmake")
 
-include(cxx14)
+set(CMAKE_CXX_STANDARD 20)
 include(CheckCXXCompilerFlag)
 include(JoinPaths)
 
@@ -111,20 +106,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
       -Wctor-dtor-privacy -Wdisabled-optimization
       -Winvalid-pch -Woverloaded-virtual
       -Wconversion -Wswitch-enum -Wundef
-      -Wno-ctor-dtor-privacy -Wno-format-nonliteral)
-  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
-      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wnoexcept
-         -Wno-dangling-else -Wno-unused-local-typedefs)
-  endif ()
-  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
-      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wdouble-promotion
-          -Wtrampolines -Wzero-as-null-pointer-constant -Wuseless-cast
-          -Wvector-operation-performance -Wsized-deallocation)
-  endif ()
-  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
-      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wshift-overflow=2
-          -Wnull-dereference -Wduplicated-cond)
-  endif ()
+      -Wno-ctor-dtor-privacy -Wno-format-nonliteral -Wnoexcept
+      -Wno-dangling-else -Wno-unused-local-typedefs -Wdouble-promotion
+      -Wtrampolines -Wzero-as-null-pointer-constant -Wuseless-cast
+      -Wvector-operation-performance -Wsized-deallocation -Wshift-overflow=2
+      -Wnull-dereference -Wduplicated-cond)
   set(WERROR_FLAG -Werror)
 endif ()
 
