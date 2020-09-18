@@ -86,7 +86,7 @@ template <typename T, typename Context> class arg_converter {
   template <typename U, FMT_ENABLE_IF(std::is_integral<U>::value)>
   void operator()(U value) {
     bool is_signed = type_ == 'd' || type_ == 'i';
-    using target_type = conditional_t<std::is_same<T, void>::value, U, T>;
+    using target_type = std::conditional_t<std::is_same<T, void>::value, U, T>;
     if (const_check(sizeof(target_type) <= sizeof(int))) {
       // Extra casts are used to silence warnings.
       if (is_signed) {
@@ -633,7 +633,7 @@ inline format_arg_store<wprintf_context, Args...> make_wprintf_args(
 template <typename S, typename Char = char_t<S>>
 inline std::basic_string<Char> vsprintf(
     const S& format,
-    basic_format_args<basic_printf_context_t<type_identity_t<Char>>> args) {
+    basic_format_args<basic_printf_context_t<std::type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buffer;
   vprintf(buffer, to_string_view(format), args);
   return to_string(buffer);
@@ -649,7 +649,7 @@ inline std::basic_string<Char> vsprintf(
   \endrst
 */
 template <typename S, typename... Args,
-          typename Char = enable_if_t<detail::is_string<S>::value, char_t<S>>>
+          typename Char = std::enable_if_t<detail::is_string<S>::value, char_t<S>>>
 inline std::basic_string<Char> sprintf(const S& format, const Args&... args) {
   using context = basic_printf_context_t<Char>;
   return vsprintf(to_string_view(format), make_format_args<context>(args...));
@@ -658,7 +658,7 @@ inline std::basic_string<Char> sprintf(const S& format, const Args&... args) {
 template <typename S, typename Char = char_t<S>>
 inline int vfprintf(
     std::FILE* f, const S& format,
-    basic_format_args<basic_printf_context_t<type_identity_t<Char>>> args) {
+    basic_format_args<basic_printf_context_t<std::type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buffer;
   vprintf(buffer, to_string_view(format), args);
   size_t size = buffer.size();
@@ -677,7 +677,7 @@ inline int vfprintf(
   \endrst
  */
 template <typename S, typename... Args,
-          typename Char = enable_if_t<detail::is_string<S>::value, char_t<S>>>
+          typename Char = std::enable_if_t<detail::is_string<S>::value, char_t<S>>>
 inline int fprintf(std::FILE* f, const S& format, const Args&... args) {
   using context = basic_printf_context_t<Char>;
   return vfprintf(f, to_string_view(format),
@@ -687,7 +687,7 @@ inline int fprintf(std::FILE* f, const S& format, const Args&... args) {
 template <typename S, typename Char = char_t<S>>
 inline int vprintf(
     const S& format,
-    basic_format_args<basic_printf_context_t<type_identity_t<Char>>> args) {
+    basic_format_args<basic_printf_context_t<std::type_identity_t<Char>>> args) {
   return vfprintf(stdout, to_string_view(format), args);
 }
 
@@ -711,7 +711,7 @@ inline int printf(const S& format_str, const Args&... args) {
 template <typename S, typename Char = char_t<S>>
 inline int vfprintf(
     std::basic_ostream<Char>& os, const S& format,
-    basic_format_args<basic_printf_context_t<type_identity_t<Char>>> args) {
+    basic_format_args<basic_printf_context_t<std::type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buffer;
   vprintf(buffer, to_string_view(format), args);
   detail::write_buffer(os, buffer);
@@ -724,7 +724,7 @@ template <typename ArgFormatter, typename Char,
               basic_printf_context<typename ArgFormatter::iterator, Char>>
 typename ArgFormatter::iterator vprintf(
     detail::buffer<Char>& out, basic_string_view<Char> format_str,
-    basic_format_args<type_identity_t<Context>> args) {
+    basic_format_args<std::type_identity_t<Context>> args) {
   typename ArgFormatter::iterator iter(out);
   Context(iter, format_str, args).template format<ArgFormatter>();
   return iter;

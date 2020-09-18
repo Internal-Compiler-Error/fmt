@@ -319,7 +319,7 @@ template <typename T> constexpr const T& constexpr_max(const T& a, const T& b) {
 }
 
 template <typename S>
-struct compiled_format_base<S, enable_if_t<is_compile_string<S>::value>>
+struct compiled_format_base<S, std::enable_if_t<is_compile_string<S>::value>>
     : basic_compiled_format {
   using char_type = char_t<S>;
 
@@ -380,7 +380,7 @@ constexpr const auto& get([[maybe_unused]] const T& first,
 template <int N, typename> struct get_type_impl;
 
 template <int N, typename... Args> struct get_type_impl<N, type_list<Args...>> {
-  using type = remove_cvref_t<decltype(get<N>(std::declval<Args>()...))>;
+  using type = std::remove_cvref_t<decltype(get<N>(std::declval<Args>()...))>;
 };
 
 template <int N, typename T>
@@ -491,7 +491,7 @@ constexpr auto parse_tail(T head, S format_str) {
   if constexpr (POS !=
                 basic_string_view<typename S::char_type>(format_str).size()) {
     constexpr auto tail = compile_format_string<Args, POS, ID>(format_str);
-    if constexpr (std::is_same<remove_cvref_t<decltype(tail)>,
+    if constexpr (std::is_same<std::remove_cvref_t<decltype(tail)>,
                                unknown_format>())
       return tail;
     else
@@ -567,7 +567,7 @@ constexpr auto compile(S format_str) {
     constexpr auto result =
         detail::compile_format_string<detail::type_list<Args...>, 0, 0>(
             format_str);
-    if constexpr (std::is_same<remove_cvref_t<decltype(result)>,
+    if constexpr (std::is_same<std::remove_cvref_t<decltype(result)>,
                                detail::unknown_format>()) {
       return detail::compiled_format<S, Args...>(to_string_view(format_str));
     } else {

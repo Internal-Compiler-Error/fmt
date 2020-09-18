@@ -97,7 +97,7 @@ template <typename T, typename _ = void> struct is_range_ : std::false_type {};
 #if !FMT_MSC_VER || FMT_MSC_VER > 1800
 template <typename T>
 struct is_range_<
-    T, conditional_t<false,
+    T, std::conditional_t<false,
                      conditional_helper<decltype(std::declval<T>().begin()),
                                         decltype(std::declval<T>().end())>,
                      void>> : std::true_type {};
@@ -191,7 +191,7 @@ template <typename T> struct is_tuple_like {
 };
 
 template <typename TupleT, typename Char>
-struct formatter<TupleT, Char, enable_if_t<fmt::is_tuple_like<TupleT>::value>> {
+struct formatter<TupleT, Char, std::enable_if_t<fmt::is_tuple_like<TupleT>::value>> {
  private:
   // C++11 generic lambda for format()
   template <typename FormatContext> struct format_each {
@@ -248,7 +248,7 @@ template <typename T, typename Char> struct is_range {
 
 template <typename RangeT, typename Char>
 struct formatter<RangeT, Char,
-                 enable_if_t<fmt::is_range<RangeT, Char>::value>> {
+    std::enable_if_t<fmt::is_range<RangeT, Char>::value>> {
   formatting_range<Char> formatting;
 
   template <typename ParseContext>

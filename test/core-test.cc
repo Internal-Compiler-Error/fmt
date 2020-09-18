@@ -314,12 +314,12 @@ using types =
 TYPED_TEST_CASE(NumericArgTest, types);
 
 template <typename T>
-fmt::enable_if_t<std::is_integral<T>::value, T> test_value() {
+std::enable_if_t<std::is_integral<T>::value, T> test_value() {
   return static_cast<T>(42);
 }
 
 template <typename T>
-fmt::enable_if_t<std::is_floating_point<T>::value, T> test_value() {
+std::enable_if_t<std::is_floating_point<T>::value, T> test_value() {
   return static_cast<T>(4.2);
 }
 

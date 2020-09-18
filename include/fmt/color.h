@@ -472,7 +472,7 @@ inline void reset_color(buffer<Char>& buffer) FMT_NOEXCEPT {
 template <typename Char>
 void vformat_to(buffer<Char>& buf, const text_style& ts,
                 basic_string_view<Char> format_str,
-                basic_format_args<buffer_context<type_identity_t<Char>>> args) {
+                basic_format_args<buffer_context<std::type_identity_t<Char>>> args) {
   bool has_style = false;
   if (ts.has_emphasis()) {
     has_style = true;
@@ -496,7 +496,7 @@ void vformat_to(buffer<Char>& buf, const text_style& ts,
 
 template <typename S, typename Char = char_t<S>>
 void vprint(std::FILE* f, const text_style& ts, const S& format,
-            basic_format_args<buffer_context<type_identity_t<Char>>> args) {
+            basic_format_args<buffer_context<std::type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buf;
   detail::vformat_to(buf, ts, to_string_view(format), args);
   buf.push_back(Char(0));
@@ -538,7 +538,7 @@ void print(const text_style& ts, const S& format_str, const Args&... args) {
 template <typename S, typename Char = char_t<S>>
 inline std::basic_string<Char> vformat(
     const text_style& ts, const S& format_str,
-    basic_format_args<buffer_context<type_identity_t<Char>>> args) {
+    basic_format_args<buffer_context<std::type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buf;
   detail::vformat_to(buf, ts, to_string_view(format_str), args);
   return fmt::to_string(buf);
@@ -570,7 +570,7 @@ template <typename OutputIt, typename Char,
           FMT_ENABLE_IF(detail::is_output_iterator<OutputIt>::value)>
 OutputIt vformat_to(
     OutputIt out, const text_style& ts, basic_string_view<Char> format_str,
-    basic_format_args<buffer_context<type_identity_t<Char>>> args) {
+    basic_format_args<buffer_context<std::type_identity_t<Char>>> args) {
   decltype(detail::get_buffer<Char>(out)) buf(detail::get_buffer_init(out));
   detail::vformat_to(buf, ts, format_str, args);
   return detail::get_iterator(buf);

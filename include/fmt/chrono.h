@@ -794,7 +794,7 @@ struct chrono_formatter {
   int precision;
   // rep is unsigned to avoid overflow.
   using rep =
-      conditional_t<std::is_integral<Rep>::value && sizeof(Rep) < sizeof(int),
+  std::conditional_t<std::is_integral<Rep>::value && sizeof(Rep) < sizeof(int),
                     unsigned, typename make_unsigned_or_unchanged<Rep>::type>;
   rep val;
   using seconds = std::chrono::duration<rep>;

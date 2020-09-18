@@ -75,7 +75,7 @@ void_t<> operator<<(std::basic_ostream<char, Traits>&, unsigned char);
 template <typename T, typename Char> class is_streamable {
  private:
   template <typename U>
-  static bool_constant<!std::is_same<decltype(std::declval<test_stream<Char>&>()
+  static std::bool_constant<!std::is_same<decltype(std::declval<test_stream<Char>&>()
                                               << std::declval<U>()),
                                      void_t<>>::value>
   test(int);
@@ -118,7 +118,7 @@ void format_value(buffer<Char>& buf, const T& value,
 
 // Formats an object of type T that has an overloaded ostream operator<<.
 template <typename T, typename Char>
-struct fallback_formatter<T, Char, enable_if_t<is_streamable<T, Char>::value>>
+struct fallback_formatter<T, Char, std::enable_if_t<is_streamable<T, Char>::value>>
     : private formatter<basic_string_view<Char>, Char> {
   FMT_CONSTEXPR auto parse(basic_format_parse_context<Char>& ctx)
       -> decltype(ctx.begin()) {
@@ -151,7 +151,7 @@ struct fallback_formatter<T, Char, enable_if_t<is_streamable<T, Char>::value>>
 
 template <typename Char>
 void vprint(std::basic_ostream<Char>& os, basic_string_view<Char> format_str,
-            basic_format_args<buffer_context<type_identity_t<Char>>> args) {
+            basic_format_args<buffer_context<std::type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buffer;
   detail::vformat_to(buffer, format_str, args);
   detail::write_buffer(os, buffer);
@@ -167,7 +167,7 @@ void vprint(std::basic_ostream<Char>& os, basic_string_view<Char> format_str,
   \endrst
  */
 template <typename S, typename... Args,
-          typename Char = enable_if_t<detail::is_string<S>::value, char_t<S>>>
+          typename Char = std::enable_if_t<detail::is_string<S>::value, char_t<S>>>
 void print(std::basic_ostream<Char>& os, const S& format_str, Args&&... args) {
   vprint(os, to_string_view(format_str),
          fmt::make_args_checked<Args...>(format_str, args...));
